@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:food_app/screens/user_homepage.dart';
 import 'package:food_app/screens/vendor_homepage.dart';
+import 'package:food_app/services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -10,55 +11,71 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  TextEditingController usernameController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
   String? selectedRole = 'User';
 
   @override
   void dispose() {
-    usernameController.dispose();
+    emailController.dispose();
     passwordController.dispose();
     super.dispose();
   }
 
+  // ✅ Login function using AuthService
   Future<void> login() async {
-    String username = usernameController.text;
+    String email = emailController.text;
     String password = passwordController.text;
 
-    if (username.isEmpty || password.isEmpty) {
+    if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Username and Password cannot be empty')),
+        const SnackBar(content: Text('Email and Password cannot be empty')),
       );
       return;
     }
 
-    if (selectedRole == 'User') {
-      Navigator.pushReplacement(
+    // Call backend service
+    Map<String, dynamic> response = await AuthService.login(
+      email: email,
+      password: password,
+      role: selectedRole ?? 'User',
+    );
+
+    // Handle backend response
+    if (response.containsKey('error')) {
+      ScaffoldMessenger.of(
         context,
-        MaterialPageRoute(builder: (context) => HomePage()),
-      );
+      ).showSnackBar(SnackBar(content: Text(response['error'])));
     } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => VendorHomepage()),
-      );
+      String role = response['role']; // backend should return role
+      if (role == 'User') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => VendorHomePage()),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Login Page')),
+      appBar: AppBar(title: const Text('Login Page')),
       body: SingleChildScrollView(
         child: Container(
           height: MediaQuery.of(context).size.height,
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
+              const Text(
                 'Welcome to Food App',
                 style: TextStyle(
                   fontSize: 28,
@@ -67,31 +84,35 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: 40),
+              const SizedBox(height: 40),
+
+              // Email field
               TextField(
-                controller: usernameController,
+                controller: emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Email',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.email),
                 ),
               ),
+              const SizedBox(height: 20),
 
-              SizedBox(height: 20),
+              // Password field
               TextField(
                 controller: passwordController,
                 obscureText: true,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Password',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.lock),
                 ),
               ),
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
 
+              // Role selection
               RadioListTile<String>(
-                title: Text('User'),
+                title: const Text('User'),
                 value: 'User',
                 groupValue: selectedRole,
                 onChanged: (value) {
@@ -101,7 +122,7 @@ class _LoginPageState extends State<LoginPage> {
                 },
               ),
               RadioListTile<String>(
-                title: Text('Vendor'),
+                title: const Text('Vendor'),
                 value: 'Vendor',
                 groupValue: selectedRole,
                 onChanged: (value) {
@@ -111,15 +132,16 @@ class _LoginPageState extends State<LoginPage> {
                 },
               ),
 
+              // Login button
               ElevatedButton(
                 onPressed: login,
                 style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text(
+                child: const Text(
                   'Login',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),

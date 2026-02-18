@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
-class VendorHomepage extends StatelessWidget {
-  const VendorHomepage({super.key});
-
+class VendorHomePage extends StatelessWidget {
+  const VendorHomePage({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
