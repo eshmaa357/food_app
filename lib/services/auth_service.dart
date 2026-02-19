@@ -2,10 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AuthService {
-  // Replace with your backend URL
   static const String baseUrl = "http://172.20.160.1:8000/";
 
-  // Login function
   static Future<Map<String, dynamic>> login({
     required String email,
     required String password,
@@ -27,10 +25,8 @@ class AuthService {
       );
 
       if (response.statusCode == 200) {
-        // return decoded JSON
         return jsonDecode(response.body);
       } else {
-        // return error
         return {"error": "Invalid credentials"};
       }
     } catch (e) {
